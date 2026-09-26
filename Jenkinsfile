@@ -10,19 +10,15 @@ pipeline {
     }
 
     stages {
-        stage('Test') {
-            parallel {
-                stage('Unit') {
-                    steps {
-                        sh 'echo Unit tests'
-                    }
+        stage('Approve') {
+            when {
+                expression {
+                    params.Environment == 'production'
                 }
+            }
 
-                stage('Integration') {
-                    steps {
-                        sh 'echo Integration tests'
-                    }
-                }
+            steps {
+                input message: 'Deploy to production?'
             }
         }
     }
