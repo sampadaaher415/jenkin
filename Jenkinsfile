@@ -3,33 +3,50 @@ pipeline {
 
     parameters {
         choice(
-            name: 'Environment',
+            name: 'ENVIRONMENT',
             choices: ['staging', 'production'],
-            description: 'Target'
+            description: 'Target environment'
         )
     }
 
     stages {
+        stage('Build') {
+            steps {
+                sh 'echo Building'
+            }
+        }
+
+        stage('Test') {
+            parallel {
+                stage('Unit') {
+                    steps {
+                        sh 'echo Unit tests'
+                    }
+                }
+
+                stage('Integration') {
+                    steps {
+                        sh 'echo Integration tests'
+                    }
+                }
+            }
+        }
+
         stage('Approve') {
             when {
                 expression {
-                    params.Environment == 'production'
+                    params.ENVIRONMENT == 'production'
                 }
             }
-
             steps {
                 input message: 'Deploy to production?'
             }
         }
-    }
 
-    post {
-        success {
-            echo 'Pipeline succeeded'
-        }
-
-        failure {
-            echo 'Pipeline failed'
+        stage('Deploy') {
+            steps {
+                sh "echo Deploying to ${params.ENVIRONMENT}"
+            }
         }
     }
 }
